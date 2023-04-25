@@ -1,0 +1,34 @@
+disabling constraints
+
+
+DECLARE @sql NVARCHAR(MAX) = N'';
+
+-- Disable all constraints in the database
+SELECT @sql += N'ALTER TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name) + N' NOCHECK CONSTRAINT ALL;'
+FROM sys.tables AS t
+INNER JOIN sys.schemas AS s ON t.schema_id = s.schema_id;
+
+EXEC sp_executesql @sql;
+
+-- Drop all constraints in the database
+SET @sql = N'';
+
+SELECT @sql += N'ALTER TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name) + N' DROP CONSTRAINT ' + QUOTENAME(constraint_name) + N';'
+FROM sys.tables AS t
+INNER JOIN sys.schemas AS s ON t.schema_id = s.schema_id
+INNER JOIN information_schema.table_constraints AS tc ON tc.table_name = t.name
+WHERE tc.constraint_type <> 'PRIMARY KEY';
+
+EXEC sp_executesql @sql;
+
+
+enabling constriants
+
+DECLARE @sql NVARCHAR(MAX) = N'';
+
+-- Enable all constraints in the database
+SELECT @sql += N'ALTER TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name) + N' CHECK CONSTRAINT ALL;'
+FROM sys.tables AS t
+INNER JOIN sys.schemas AS s ON t.schema_id = s.schema_id;
+
+EXEC sp_executesql @sql;
